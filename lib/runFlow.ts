@@ -44,13 +44,24 @@ function createNext<Callback extends BaseCallback>(
 	const addon = addons[pos];
 	if (!addon)
 		return customLastNext || createDeadNext();
-	const self: NextFunction = async () => {
+	const self: NextFunction = async callNext => {
 		if (self.called)
 			return;
 		self.called = true;
-		try {
-			if (typeof addon === "function")
-				await addon(
+		if (callNext !== false) {
+			try {
+				if (typeof addon === "function")
+					await addon(
+						...args,
+						createNext({
+							addons,
+							position,
+							args,
+							customLastNext,
+							_error
+						})
+					);
+				else await addon.run(
 					...args,
 					createNext({
 						addons,
@@ -60,23 +71,16 @@ function createNext<Callback extends BaseCallback>(
 						_error
 					})
 				);
-			else await addon.run(
-				...args,
-				createNext({
-					addons,
-					position,
-					args,
-					customLastNext,
-					_error
-				})
-			);
-		} catch (error) {
-			if (_error[0] === undefined)
-				_error[0] = error;
-		} finally {
-			if (_error[0] !== undefined)
-				throw _error[0];
+			} catch (error) {
+				if (_error[0] === undefined)
+					_error[0] = error;
+			} finally {
+				if (_error[0] !== undefined)
+					throw _error[0];
+			}
 		}
+		if (_error[0] !== undefined)
+			throw _error[0];
 	};
 	self.isNextFunction = true;
 	return self;
