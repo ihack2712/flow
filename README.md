@@ -6,7 +6,7 @@ This module is the successor of [ihack2712/middleware](https://github.com/ihack2
 
 ```ts
 // Imports
-import Flow from "./mod.ts";
+import Flow from "https://deno.land/x/flow/mod.ts";
 
 // deno-lint-ignore no-explicit-any
 const flow = new Flow<(num: number) => any>();
